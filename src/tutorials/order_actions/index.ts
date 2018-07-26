@@ -26,18 +26,10 @@ const mainAsync = async () => {
     const EXCHANGE_ADDRESS = zeroEx.exchange.getContractAddress();
     console.log('EXCHANGE_ADDRESS is: ', EXCHANGE_ADDRESS);
 
-    // Getting list of accounts
-    const accounts = [
-        '0x00AC112bF28AE1D0e9569aF6844298283515F4b0', // relayer
-        '0xEd113C53b848E7e50950C9358DCAECFd6feBf747', // makerAddress = Captains Barter Test 1
-        '0xE830848074C77e0a836C999e45cc38fe451927e2', // takerAddress = Captains Barter Test 2
-    ];
-    console.log('accounts: ', JSON.stringify(accounts));
-
     // Set our addresses
     const relayerAddress = '0x00AC112bF28AE1D0e9569aF6844298283515F4b0'.toLowerCase();
-    const makerAddress = '0xEd113C53b848E7e50950C9358DCAECFd6feBf747'.toLowerCase();
-    const takerAddress = '0xE830848074C77e0a836C999e45cc38fe451927e2'.toLowerCase();
+    const takerAddress = '0xEd113C53b848E7e50950C9358DCAECFd6feBf747'.toLowerCase();
+    const makerAddress = '0xE830848074C77e0a836C999e45cc38fe451927e2'.toLowerCase();
     // Unlimited allowances to 0x proxy contract for maker and taker
     const setMakerAllowTxHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(ZRX_ADDRESS, makerAddress);
     console.log('setMakerAllowTxHash is: ', setMakerAllowTxHash);
@@ -66,10 +58,10 @@ const mainAsync = async () => {
         takerTokenAddress: WETH_ADDRESS, // The token address the Maker is requesting from the Taker.
         exchangeContractAddress: EXCHANGE_ADDRESS, // The exchange.sol address.
         salt: ZeroEx.generatePseudoRandomSalt(), // Random number to make the order (and therefore its hash) unique.
-        makerFee: new BigNumber(0), // How many ZRX the Maker will pay as a fee to the Relayer.
-        takerFee: new BigNumber(0), // How many ZRX the Taker will pay as a fee to the Relayer.
-        makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.2), DECIMALS), // Base 18 decimals, The amount of ZRX token the Maker is offering.
-        takerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.3), DECIMALS), // Base 18 decimals, The amount of ZRX token the Maker is requesting from the Taker.
+        makerFee: ZeroEx.toBaseUnitAmount(new BigNumber(5), 18), // How many ZRX the Maker will pay as a fee to the Relayer.
+        takerFee: ZeroEx.toBaseUnitAmount(new BigNumber(5), 18), // How many ZRX the Taker will pay as a fee to the Relayer.
+        makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.4), DECIMALS), // Base 18 decimals, The amount of ZRX token the Maker is offering.
+        takerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.01), DECIMALS), // Base 18 decimals, The amount of WETH token the Maker is requesting from the Taker.
         expirationUnixTimestampSec: new BigNumber(Date.now() + 3600000), // When will the order expire (in unix time), Valid for up to an hour
     };
 
@@ -93,7 +85,7 @@ const mainAsync = async () => {
     // Try to fill order
     const shouldThrowOnInsufficientBalanceOrAllowance = true;
     // the amount of tokens (in our case WETH) the Taker wants to fill.
-    const fillTakerTokenAmount = ZeroEx.toBaseUnitAmount(new BigNumber(0.1), DECIMALS);
+    const fillTakerTokenAmount = ZeroEx.toBaseUnitAmount(new BigNumber(0.05), DECIMALS);
 
     // Filling order
     const txHash = await zeroEx.exchange.fillOrderAsync(
