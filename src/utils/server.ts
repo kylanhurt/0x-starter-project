@@ -25,6 +25,8 @@ app.get('/v0/orderbook', (req, res) => {
     console.log('HTTP: GET orderbook');
     const baseTokenAddress = req.param('baseTokenAddress');
     const quoteTokenAddress = req.param('quoteTokenAddress');
+    const renderedOrderBook = renderOrderBook(baseTokenAddress, quoteTokenAddress);
+    console.log('orderbook is: ', renderedOrderBook);
     res.status(201).send(renderOrderBook(baseTokenAddress, quoteTokenAddress));
 });
 app.post('/v0/order', (req, res) => {
@@ -40,17 +42,20 @@ app.post('/v0/order', (req, res) => {
         };
         socketConnection.send(JSON.stringify(message));
     }
+    console.log('order is: ', order);
     res.status(201).send({});
 });
 app.post('/v0/fees', (req, res) => {
     console.log('HTTP: POST fees');
     const makerFee = new BigNumber(0).toString();
     const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(10), 18).toString();
-    res.status(201).send({
+    const fees = {
         feeRecipient: ZeroEx.NULL_ADDRESS,
         makerFee,
         takerFee,
-    });
+    };
+    console.log('fees is: ', fees);
+    res.status(201).send(fees);
 });
 app.listen(3000, () => console.log('Standard relayer API (HTTP) listening on port 3000!'));
 
