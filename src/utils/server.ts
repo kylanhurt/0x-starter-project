@@ -3,6 +3,7 @@ import { BigNumber } from '@0xproject/utils';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as http from 'http';
+import * as mysql from 'mysql';
 import {
     connection as WebSocketConnection,
     server as WebSocketServer,
@@ -14,10 +15,20 @@ interface Order {
     takerTokenAddress: string;
 }
 
+// MySQL config
+
+const mysqlConnection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'root',
+    database: 'cb',
+});
+mysqlConnection.connect();
+
 // Global state
 const orders: Order[] = [];
 let socketConnection: WebSocketConnection | undefined;
-
+const orderBook = [];
 // HTTP Server
 const app = express();
 app.use(bodyParser.json());
@@ -42,15 +53,24 @@ app.post('/v0/order', (req, res) => {
         };
         socketConnection.send(JSON.stringify(message));
     }
+    const { maker, taker, feeRecipient, makerTokenAddress, takerTokenAddress, exchangeContractAddress, salt, makerTokenAmount, takerTokenAmount, expirationUnixTimestampSec, makerFee, takerFee, ecSignature } = order;
+    console.log('egSignature is: ', JSON.stringify(order.ecSignature));
+    const stringifiedSignature = `${ecSignature.v}${ecSignature.r}${ecSignature.s}`;
+    const query = `INSERT INTO ORDERS (maker, taker, feeRecipient, makerTokenAddress, takerTokenAddress, exchangeContractAddress, salt, makerTokenAmount, takerTokenAmount, expirationUnixTimestampSec, makerFee, takerFee, ecSignature)
+                    VALUES ('${maker}', '${taker}', '${feeRecipient}', '${makerTokenAddress}', '${takerTokenAddress}', '${exchangeContractAddress}', '${salt}','${makerTokenAmount}', '${takerTokenAmount}', '${expirationUnixTimestampSec}', '${makerFee}', '${takerFee}', '${stringifiedSignature}')`;
+    console.log('Query is: ', query);
+    mysqlConnection.query(query, (error, results, fields) => {
+        if (error) { throw error; }
+    });
     console.log('order is: ', order);
     res.status(201).send({});
 });
 app.post('/v0/fees', (req, res) => {
     console.log('HTTP: POST fees');
-    const makerFee = new BigNumber(0).toString();
-    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(10), 18).toString();
+    const makerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.6), 18);
+    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.8), 18);
     const fees = {
-        feeRecipient: ZeroEx.NULL_ADDRESS,
+        feeRecipient: '0x03aaea12a47b8e688ed2f882b19fb3a3471daa0e'.toLowerCase(),
         makerFee,
         takerFee,
     };

@@ -78,7 +78,6 @@ const mainAsync = async () => {
         ...order,
         ecSignature,
     };
-
     // Verify that order is fillable
     await zeroEx.exchange.validateOrderFillableOrThrowAsync(signedOrder);
 
@@ -93,7 +92,7 @@ const mainAsync = async () => {
         fillTakerTokenAmount,
         shouldThrowOnInsufficientBalanceOrAllowance,
         takerAddress,
-    );
+    )
 
     // Transaction receipt
     const txReceipt = await zeroEx.awaitTransactionMinedAsync(txHash);
