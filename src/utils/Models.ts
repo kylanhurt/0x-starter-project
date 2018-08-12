@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 
-export const orderSchema: mongoose.Schema = new mongoose.Schema({
+const orderSchema: mongoose.Schema = new mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
   maker: String,
   taker: String,
   makerFee: String,
@@ -15,8 +16,8 @@ export const orderSchema: mongoose.Schema = new mongoose.Schema({
   exchangeContractAddress: String,
 });
 
-export const Order = mongoose.model('order', orderSchema);
+export const Order = mongoose.model('Order', orderSchema, 'orders');
 
 export const models = {
-  orderSchema,
+  Order,
 };

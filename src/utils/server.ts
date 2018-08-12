@@ -14,34 +14,28 @@ import {
 import { models } from './Models';
 
 // Type declarations
-interface Order {
+interface ZeroExOrder {
     makerTokenAddress: string;
     takerTokenAddress: string;
 }
 
 // Global state
-const orders: Order[] = [];
+const orders: ZeroExOrder[] = [];
 let socketConnection: WebSocketConnection | undefined;
 
 // DB config
-const mongoDB = 'mongodb://localhost:27017/cb';
-// Get Mongoose to use the global promise library
-// mongoose.Promise = global.Promise;
-// Get the default connection
+mongoose.connect('mongodb://localhost:27017/cb');
 const db = mongoose.connection;
-
-// Bind connection to error event (to get notification of connection errors)
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-/* const mysqlConnection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'cb',
-});
-mysqlConnection.connect(); */
+db.on('error', console.error.bind(console, 'connection error:'));
 
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
+
+const orderSchema: mongoose.Schema = new mongoose.Schema({
+    maker: String,
+    _id: mongoose.Schema.Types.ObjectId,
+});
+const Order = mongoose.model('Order', orderSchema, 'orders');
 
 // HTTP Server
 const app = express();
@@ -68,9 +62,15 @@ app.post('/v0/order', (req, res) => {
         socketConnection.send(JSON.stringify(message));
     }
     console.log('egSignature is: ', JSON.stringify(order.ecSignature));
-    db.collection('orders').insert(order);
-    console.log('order is: ', order);
-    res.status(201).send({});
+    const userOrder = new Order({
+        maker: 'hi',
+        _id: new mongoose.Types.ObjectId(),
+    });
+    console.log('userOrder set:', userOrder);
+    userOrder.save(err => {
+        console.log('error:' + err);
+    });
+    res.status(201).send({order});
 });
 
 app.post('/v0/fees', (req, res) => {
