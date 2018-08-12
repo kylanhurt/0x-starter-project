@@ -25,17 +25,12 @@ let socketConnection: WebSocketConnection | undefined;
 
 // DB config
 mongoose.connect('mongodb://localhost:27017/cb');
+
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
-
-const orderSchema: mongoose.Schema = new mongoose.Schema({
-    maker: String,
-    _id: mongoose.Schema.Types.ObjectId,
-});
-const Order = mongoose.model('Order', orderSchema, 'orders');
 
 // HTTP Server
 const app = express();
@@ -62,8 +57,8 @@ app.post('/v0/order', (req, res) => {
         socketConnection.send(JSON.stringify(message));
     }
     console.log('egSignature is: ', JSON.stringify(order.ecSignature));
-    const userOrder = new Order({
-        maker: 'hi',
+    const userOrder = new models.Order({
+        ...order,
         _id: new mongoose.Types.ObjectId(),
     });
     console.log('userOrder set:', userOrder);
