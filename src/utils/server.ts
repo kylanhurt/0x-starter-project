@@ -1,13 +1,17 @@
 import {ZeroEx} from '0x.js';
+import { schemas as zeroExSchemas } from '@0xproject/json-schemas';
 import { BigNumber } from '@0xproject/utils';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as http from 'http';
+import * as mongoose from 'mongoose';
 import * as mysql from 'mysql';
 import {
     connection as WebSocketConnection,
     server as WebSocketServer,
 } from 'websocket';
+
+import { models } from './Models';
 
 // Type declarations
 interface Order {
@@ -15,20 +19,30 @@ interface Order {
     takerTokenAddress: string;
 }
 
-// MySQL config
+// Global state
+const orders: Order[] = [];
+let socketConnection: WebSocketConnection | undefined;
 
-const mysqlConnection = mysql.createConnection({
+// DB config
+const mongoDB = 'mongodb://localhost:27017/cb';
+// Get Mongoose to use the global promise library
+// mongoose.Promise = global.Promise;
+// Get the default connection
+const db = mongoose.connection;
+
+// Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+/* const mysqlConnection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'root',
     database: 'cb',
 });
-mysqlConnection.connect();
+mysqlConnection.connect(); */
 
 // Global state
-const orders: Order[] = [];
-let socketConnection: WebSocketConnection | undefined;
-const orderBook = [];
+const ZRX_TOKEN_DECIMALS = 18; // need to replace
+
 // HTTP Server
 const app = express();
 app.use(bodyParser.json());
@@ -40,10 +54,10 @@ app.get('/v0/orderbook', (req, res) => {
     console.log('orderbook is: ', renderedOrderBook);
     res.status(201).send(renderOrderBook(baseTokenAddress, quoteTokenAddress));
 });
+
 app.post('/v0/order', (req, res) => {
     console.log('HTTP: POST order');
     const order = req.body;
-    orders.push(order);
     if (socketConnection !== undefined) {
         const message = {
             type: 'update',
@@ -53,24 +67,18 @@ app.post('/v0/order', (req, res) => {
         };
         socketConnection.send(JSON.stringify(message));
     }
-    const { maker, taker, feeRecipient, makerTokenAddress, takerTokenAddress, exchangeContractAddress, salt, makerTokenAmount, takerTokenAmount, expirationUnixTimestampSec, makerFee, takerFee, ecSignature } = order;
     console.log('egSignature is: ', JSON.stringify(order.ecSignature));
-    const stringifiedSignature = `${ecSignature.v}${ecSignature.r}${ecSignature.s}`;
-    const query = `INSERT INTO ORDERS (maker, taker, feeRecipient, makerTokenAddress, takerTokenAddress, exchangeContractAddress, salt, makerTokenAmount, takerTokenAmount, expirationUnixTimestampSec, makerFee, takerFee, ecSignature)
-                    VALUES ('${maker}', '${taker}', '${feeRecipient}', '${makerTokenAddress}', '${takerTokenAddress}', '${exchangeContractAddress}', '${salt}','${makerTokenAmount}', '${takerTokenAmount}', '${expirationUnixTimestampSec}', '${makerFee}', '${takerFee}', '${stringifiedSignature}')`;
-    console.log('Query is: ', query);
-    mysqlConnection.query(query, (error, results, fields) => {
-        if (error) { throw error; }
-    });
+    db.collection('orders').insert(order);
     console.log('order is: ', order);
     res.status(201).send({});
 });
+
 app.post('/v0/fees', (req, res) => {
     console.log('HTTP: POST fees');
-    const makerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.6), 18);
-    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.8), 18);
+    const makerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.1), ZRX_TOKEN_DECIMALS);
+    const takerFee = ZeroEx.toBaseUnitAmount(new BigNumber(0.15), ZRX_TOKEN_DECIMALS);
     const fees = {
-        feeRecipient: '0x03aaea12a47b8e688ed2f882b19fb3a3471daa0e'.toLowerCase(),
+        feeRecipient: '0x03aaea12a47b8e688ed2f882b19fb3a3471daa0e',
         makerFee,
         takerFee,
     };
