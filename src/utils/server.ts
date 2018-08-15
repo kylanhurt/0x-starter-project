@@ -11,6 +11,7 @@ import {
     server as WebSocketServer,
 } from 'websocket';
 
+import { getExternalOrders } from './connect';
 import { models } from './Models';
 
 // Type declarations
@@ -31,6 +32,10 @@ db.on('error', console.error.bind(console, 'connection error:'));
 
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
+
+// start getting external orders
+const orderBook = [];
+setInterval(getExternalOrders, 10000);
 
 // HTTP Server
 const app = express();

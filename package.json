@@ -48,12 +48,14 @@
         "@0xproject/utils": "^0.5.2",
         "@types/mongoose": "^5.2.5",
         "@types/mysql": "^2.15.5",
+        "@types/node-fetch": "^2.1.2",
         "body-parser": "^1.18.2",
         "express": "^4.16.2",
         "from": "^0.1.7",
         "import": "^0.0.6",
         "mongoose": "^5.2.7",
         "mysql": "^2.16.0",
+        "node-fetch": "^2.2.0",
         "web3": "^0.20.0",
         "websocket": "^1.0.25"
     }
