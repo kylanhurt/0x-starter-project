@@ -35,7 +35,7 @@ const ZRX_TOKEN_DECIMALS = 18; // need to replace
 
 // start getting external orders
 const orderBook = [];
-setInterval(getExternalOrders, 10000);
+// setInterval(getExternalOrders, 10000);
 
 // HTTP Server
 const app = express();
@@ -52,6 +52,7 @@ app.get('/v0/orderbook', (req, res) => {
 app.post('/v0/order', (req, res) => {
     console.log('HTTP: POST order');
     const order = req.body;
+    orders.push(order);
     if (socketConnection !== undefined) {
         const message = {
             type: 'update',
@@ -61,16 +62,16 @@ app.post('/v0/order', (req, res) => {
         };
         socketConnection.send(JSON.stringify(message));
     }
-    console.log('egSignature is: ', JSON.stringify(order.ecSignature));
-    const userOrder = new models.Order({
+    // console.log('egSignature is: ', JSON.stringify(order.ecSignature));
+    /* const userOrder = new models.Order({
         ...order,
         _id: new mongoose.Types.ObjectId(),
     });
     console.log('userOrder set:', userOrder);
     userOrder.save(err => {
         console.log('error:' + err);
-    });
-    res.status(201).send({order});
+    }); */
+    res.status(201).send({});
 });
 
 app.post('/v0/fees', (req, res) => {
