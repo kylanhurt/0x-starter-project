@@ -15,13 +15,13 @@ import { getExternalOrders } from './connect';
 import { models } from './Models';
 
 // Type declarations
-interface ZeroExOrder {
+export interface ZeroExOrder {
     makerTokenAddress: string;
     takerTokenAddress: string;
 }
 
 // Global state
-const orders: ZeroExOrder[] = [];
+export const orders: ZeroExOrder[] = [];
 let socketConnection: WebSocketConnection | undefined;
 
 // DB config
@@ -35,19 +35,11 @@ const ZRX_TOKEN_DECIMALS = 18; // need to replace
 
 // start getting external orders
 const orderBook = [];
-setInterval(getExternalOrders, 10000);
+setInterval(() => getExternalOrders(orders), 10000);
 
 // HTTP Server
 const app = express();
 app.use(bodyParser.json());
-app.get('/v0/orderbook', (req, res) => {
-    console.log('HTTP: GET orderbook');
-    const baseTokenAddress = req.param('baseTokenAddress');
-    const quoteTokenAddress = req.param('quoteTokenAddress');
-    const renderedOrderBook = renderOrderBook(baseTokenAddress, quoteTokenAddress);
-    console.log('orderbook is: ', renderedOrderBook);
-    res.status(201).send(renderOrderBook(baseTokenAddress, quoteTokenAddress));
-});
 
 app.post('/v0/order', (req, res) => {
     console.log('HTTP: POST order');
@@ -70,7 +62,17 @@ app.post('/v0/order', (req, res) => {
     userOrder.save(err => {
         console.log('error:' + err);
     });
+    orders.push(order);
     res.status(201).send({order});
+});
+
+app.get('/v0/orderbook', (req, res) => {
+    console.log('HTTP: GET orderbook, ', orders.length, ' orders available');
+    const baseTokenAddress = req.param('baseTokenAddress');
+    const quoteTokenAddress = req.param('quoteTokenAddress');
+    const renderedOrderBook = renderOrderBook(baseTokenAddress, quoteTokenAddress);
+    console.log('rendered orderBook is: ', renderedOrderBook);
+    res.status(201).send(renderedOrderBook);
 });
 
 app.post('/v0/fees', (req, res) => {
