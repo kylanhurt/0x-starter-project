@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 import { relayers } from './relayers';
-import { ZeroExOrder } from './server';
+import { orderBookFetch, ZeroExOrder } from './server';
 import { RelayerAPI, RelayerInfo } from './types';
 let iterator = 0;
 
@@ -19,13 +19,19 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
           const currentUnixTimeStampSec = Date.now();
           const validOrders = orders.filter((item: any) => {
             if (parseInt(item.expirationUnixTimestampSec, 10) < (currentUnixTimeStampSec / 1000)) {
-              console.log('Invalid order removed');
+              console.log('Expired order removed');
+              return false;
+            }
+            // if (!item.orderHash) { item.orderHash = ZeroEx.getOrderHashHex(item); }
+            const duplicate = orderBook.findIndex(order => order.orderHash === item.orderHash);
+            if (duplicate > -1) {
+              // console.log('Duplicate order removed');
               return false;
             }
             return true;
           });
+          console.log('adding ' + validOrders.length + ' to orderBook');
           orderBook.push(...validOrders);
-          // console.log('orderBook: ', orderBook);
         }
       }
     }
@@ -36,6 +42,8 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
   }
   if (iterator === relayers.length) {
     iterator = 0;
+    console.log('Ending orderBookFetch');
+    // clearInterval(orderBookFetch);
   }
 }
 

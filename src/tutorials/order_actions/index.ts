@@ -28,8 +28,8 @@ const mainAsync = async () => {
 
     // Set our addresses
     const relayerAddress = '0x00AC112bF28AE1D0e9569aF6844298283515F4b0'.toLowerCase();
-    const takerAddress = '0xEd113C53b848E7e50950C9358DCAECFd6feBf747'.toLowerCase();
-    const makerAddress = '0xE830848074C77e0a836C999e45cc38fe451927e2'.toLowerCase();
+    const takerAddress = '0x67388c030417d0b062bD8751ED020E38f4C26d4d'.toLowerCase();
+    const makerAddress = '0xBC253dcedc8B54D8bB346F5F4AFc6b20A21E6617'.toLowerCase();
     // Unlimited allowances to 0x proxy contract for maker and taker
     const setMakerAllowTxHash = await zeroEx.token.setUnlimitedProxyAllowanceAsync(ZRX_ADDRESS, makerAddress);
     console.log('setMakerAllowTxHash is: ', setMakerAllowTxHash);
@@ -58,9 +58,9 @@ const mainAsync = async () => {
         takerTokenAddress: WETH_ADDRESS, // The token address the Maker is requesting from the Taker.
         exchangeContractAddress: EXCHANGE_ADDRESS, // The exchange.sol address.
         salt: ZeroEx.generatePseudoRandomSalt(), // Random number to make the order (and therefore its hash) unique.
-        makerFee: ZeroEx.toBaseUnitAmount(new BigNumber(5), 18), // How many ZRX the Maker will pay as a fee to the Relayer.
-        takerFee: ZeroEx.toBaseUnitAmount(new BigNumber(5), 18), // How many ZRX the Taker will pay as a fee to the Relayer.
-        makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.4), DECIMALS), // Base 18 decimals, The amount of ZRX token the Maker is offering.
+        makerFee: ZeroEx.toBaseUnitAmount(new BigNumber(.5), 18), // How many ZRX the Maker will pay as a fee to the Relayer.
+        takerFee: ZeroEx.toBaseUnitAmount(new BigNumber(.5), 18), // How many ZRX the Taker will pay as a fee to the Relayer.
+        makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(1.4), DECIMALS), // Base 18 decimals, The amount of ZRX token the Maker is offering.
         takerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(0.01), DECIMALS), // Base 18 decimals, The amount of WETH token the Maker is requesting from the Taker.
         expirationUnixTimestampSec: new BigNumber(Date.now() + 3600000), // When will the order expire (in unix time), Valid for up to an hour
     };
@@ -92,7 +92,7 @@ const mainAsync = async () => {
         fillTakerTokenAmount,
         shouldThrowOnInsufficientBalanceOrAllowance,
         takerAddress,
-    )
+    );
 
     // Transaction receipt
     const txReceipt = await zeroEx.awaitTransactionMinedAsync(txHash);

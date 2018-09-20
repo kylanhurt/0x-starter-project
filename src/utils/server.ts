@@ -2,6 +2,7 @@ import {ZeroEx} from '0x.js';
 import { schemas as zeroExSchemas } from '@0xproject/json-schemas';
 import { BigNumber } from '@0xproject/utils';
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 import * as express from 'express';
 import * as http from 'http';
 import * as mongoose from 'mongoose';
@@ -18,6 +19,7 @@ import { models } from './Models';
 export interface ZeroExOrder {
     makerTokenAddress: string;
     takerTokenAddress: string;
+    orderHash: string;
 }
 
 // Global state
@@ -33,13 +35,12 @@ db.on('error', console.error.bind(console, 'connection error:'));
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
 
-// start getting external orders
-const orderBook = [];
-setInterval(() => getExternalOrders(orders), 10000);
+export const orderBookFetch = setInterval(() => getExternalOrders(orders), 3000);
 
 // HTTP Server
 const app = express();
 app.use(bodyParser.json());
+app.use(cors({origin: '*'}));
 
 app.post('/v0/order', (req, res) => {
     console.log('HTTP: POST order');
@@ -71,7 +72,6 @@ app.get('/v0/orderbook', (req, res) => {
     const baseTokenAddress = req.param('baseTokenAddress');
     const quoteTokenAddress = req.param('quoteTokenAddress');
     const renderedOrderBook = renderOrderBook(baseTokenAddress, quoteTokenAddress);
-    console.log('rendered orderBook is: ', renderedOrderBook);
     res.status(201).send(renderedOrderBook);
 });
 
