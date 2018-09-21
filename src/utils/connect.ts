@@ -1,3 +1,5 @@
+import { ZeroEx } from '0x.js';
+import { models } from 'mongoose';
 import fetch from 'node-fetch';
 
 import { relayers } from './relayers';
@@ -22,12 +24,17 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
               console.log('Expired order removed');
               return false;
             }
-            // if (!item.orderHash) { item.orderHash = ZeroEx.getOrderHashHex(item); }
+            if (!item.orderHash) {
+              item.orderHash = ZeroEx.getOrderHashHex(item);
+              console.log('Order given a hash: ', item.orderHash);
+            }
             const duplicate = orderBook.findIndex(order => order.orderHash === item.orderHash);
             if (duplicate > -1) {
               // console.log('Duplicate order removed');
               return false;
             }
+            const orderItem = new models.Order(item);
+            orderItem.save((err: Error) => console.log('Error saving order: ', err));
             return true;
           });
           console.log('adding ' + validOrders.length + ' to orderBook');

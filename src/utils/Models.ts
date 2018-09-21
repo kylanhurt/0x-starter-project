@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 
 const orderSchema: mongoose.Schema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
+  orderHash: String,
   maker: String,
   taker: String,
   makerFee: String,

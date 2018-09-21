@@ -1,4 +1,4 @@
-import {ZeroEx} from '0x.js';
+import { ZeroEx } from '0x.js';
 import { schemas as zeroExSchemas } from '@0xproject/json-schemas';
 import { BigNumber } from '@0xproject/utils';
 import * as bodyParser from 'body-parser';
@@ -17,21 +17,36 @@ import { models } from './Models';
 
 // Type declarations
 export interface ZeroExOrder {
+    orderHash: string;
+    maker: string;
+    taker: string;
+    makerFee: string;
+    takerFee: string;
+    makerTokenAmount: string;
+    takerTokenAmount: string;
     makerTokenAddress: string;
     takerTokenAddress: string;
-    orderHash: string;
-}
+    salt: string;
+    feeRecipient: string;
+    expirationUnixTimestampSec: string;
+    exchangeContractAddress: string;
+  }
 
 // Global state
-export const orders: ZeroExOrder[] = [];
 let socketConnection: WebSocketConnection | undefined;
-
+const orders: ZeroExOrder[] = [];
 // DB config
 mongoose.connect('mongodb://localhost:27017/cb');
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
-
+models.Order.find().exec((err, docs: ZeroExOrder[]) => {
+    console.log('Initial docs length is: ', docs.length);
+    docs.forEach(doc => {
+        orders.push(doc);
+    });
+});
+console.log('orders are: ', orders);
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
 
@@ -57,7 +72,6 @@ app.post('/v0/order', (req, res) => {
     console.log('egSignature is: ', JSON.stringify(order.ecSignature));
     const userOrder = new models.Order({
         ...order,
-        _id: new mongoose.Types.ObjectId(),
     });
     console.log('userOrder set:', userOrder);
     userOrder.save(err => {
