@@ -14,6 +14,7 @@ const orderSchema: mongoose.Schema = new mongoose.Schema({
   feeRecipient: String,
   expirationUnixTimestampSec: String,
   exchangeContractAddress: String,
+  ecSignature: Object,
 });
 
 export const Order = mongoose.model('Order', orderSchema, 'orders');

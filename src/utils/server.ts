@@ -30,6 +30,7 @@ export interface ZeroExOrder {
     feeRecipient: string;
     expirationUnixTimestampSec: string;
     exchangeContractAddress: string;
+    ecSignature: object;
   }
 
 // Global state
@@ -50,7 +51,7 @@ console.log('orders are: ', orders);
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
 
-export const orderBookFetch = setInterval(() => getExternalOrders(orders), 3000);
+export const orderBookFetch = setInterval(() => getExternalOrders(orders), 30000);
 
 // HTTP Server
 const app = express();

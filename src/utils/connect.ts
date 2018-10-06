@@ -34,7 +34,9 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
               return false;
             }
             const orderItem = new models.Order(item);
-            orderItem.save((err: Error) => console.log('Error saving order: ', err));
+            orderItem.save((err: Error) => {
+              if (err) { console.log('Error saving order: ', err); }
+            });
             return true;
           });
           console.log('adding ' + validOrders.length + ' to orderBook');
@@ -44,7 +46,7 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
     }
     iterator++;
   } catch (error) {
-    console.log('getExternalOrders error');
+    console.log('getExternalOrders error: ', error);
     iterator++;
   }
   if (iterator === relayers.length) {
