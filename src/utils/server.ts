@@ -37,7 +37,7 @@ export interface ZeroExOrder {
 let socketConnection: WebSocketConnection | undefined;
 const orders: ZeroExOrder[] = [];
 // DB config
-mongoose.connect('mongodb://localhost:27017/cb');
+mongoose.connect('mongodb://mongo:27017/cb');
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
