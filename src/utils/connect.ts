@@ -5,7 +5,6 @@ import fetch from 'node-fetch';
 import { relayers } from './relayers';
 import { orderBookFetch, ZeroExOrder } from './server';
 import { RelayerAPI, RelayerInfo } from './types';
-import { models } from './Models';
 
 let iterator = 0;
 
@@ -41,7 +40,7 @@ export async function getExternalOrders(orderBook: ZeroExOrder[]) {
             });
             return true;
           });
-          console.log('adding ' + validOrders.length + ' to orderBook');
+          console.log('adding ' + validOrders.length + ' to orderBooks');
           orderBook.push(...validOrders);
         }
       }

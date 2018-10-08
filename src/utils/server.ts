@@ -42,6 +42,7 @@ mongoose.connect('mongodb://mongo:27017/cb');
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 models.Order.find().exec((err, docs: ZeroExOrder[]) => {
+    console.log('Initial docs is: ', docs);
     console.log('Initial docs length is: ', docs.length);
     docs.forEach(doc => {
         orders.push(doc);
