@@ -38,21 +38,31 @@ let socketConnection: WebSocketConnection | undefined;
 const orders: ZeroExOrder[] = [];
 // DB config
 mongoose.connect('mongodb://mongo:27017/cb');
-
+let readyState = 2;
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
-models.Order.find().exec((err, docs: ZeroExOrder[]) => {
-    console.log('Initial docs is: ', docs);
-    console.log('Initial docs length is: ', docs.length);
-    docs.forEach(doc => {
-        orders.push(doc);
-    });
-});
-console.log('orders are: ', orders);
+
+export const awaitDB = async () => {
+    const dbLoop = setInterval(() => {
+        console.log('db.readyState is: ', db.readyState);
+        if (db.readyState === 1) {
+            readyState = 1;
+            clearInterval(dbLoop);
+            models.Order.find().exec((err, docs: ZeroExOrder[]) => {
+                console.log('Initial docs length is: ', docs.length);
+                docs.forEach(doc => {
+                    orders.push(doc);
+                });
+                console.log('orders are: ', orders);
+                const orderBookFetch = setInterval(() => getExternalOrders(orders), 30000);
+            });
+            return;
+        }
+    }, 5000);
+};
+awaitDB();
 // Global state
 const ZRX_TOKEN_DECIMALS = 18; // need to replace
-
-export const orderBookFetch = setInterval(() => getExternalOrders(orders), 30000);
 
 // HTTP Server
 const app = express();

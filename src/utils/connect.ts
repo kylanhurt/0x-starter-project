@@ -3,7 +3,7 @@ import { models } from 'mongoose';
 import fetch from 'node-fetch';
 
 import { relayers } from './relayers';
-import { orderBookFetch, ZeroExOrder } from './server';
+import { ZeroExOrder } from './server';
 import { RelayerAPI, RelayerInfo } from './types';
 
 let iterator = 0;
